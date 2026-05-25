@@ -1,0 +1,654 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Courier New',monospace;background:#0a0a0f;color:#e8e6f0;min-height:100vh}
+  :root{
+    --gold:#f5c842;--silver:#b0bec5;--bronze:#cd7f32;
+    --s:#ff4757;--a:#ff6b35;--b:#3ddc84;--c:#4fc3f7;--d:#90a4ae;
+    --red-status:#ff4757;--green-status:#3ddc84;--yellow-status:#f5c842;
+    --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;--border:#2a2a3e;
+    --text:#e8e6f0;--muted:#6b6b8a;
+  }
+  .app{max-width:1100px;margin:0 auto;padding:1rem}
+  .header{display:flex;align-items:center;justify-content:space-between;padding:1rem 0 1.5rem;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+  .logo{font-size:1.2rem;font-weight:700;letter-spacing:2px;color:var(--gold)}
+  .logo span{color:var(--muted);font-weight:400}
+  .nav-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:3px}
+  .tab{padding:6px 14px;border-radius:4px;cursor:pointer;font-size:12px;letter-spacing:1px;border:none;background:transparent;color:var(--muted);font-family:inherit;transition:all 0.15s}
+  .tab.active{background:var(--border);color:var(--text)}
+  .header-actions{display:flex;gap:8px}
+  .btn{padding:6px 12px;border-radius:4px;cursor:pointer;font-size:11px;letter-spacing:1px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;transition:all 0.15s}
+  .btn:hover{border-color:var(--gold);color:var(--gold)}
+  .btn.primary{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700}
+  .btn.primary:hover{opacity:0.85}
+  .btn.danger{border-color:var(--red-status);color:var(--red-status)}
+  .btn.success{border-color:var(--green-status);color:var(--green-status)}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+  .section-title{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+  .skill-group{background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:1rem;overflow:hidden}
+  .skill-group-header{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid transparent;transition:background 0.15s}
+  .skill-group-header:hover{background:var(--bg3)}
+  .skill-group-header.open{border-bottom-color:var(--border)}
+  .group-meta{flex:1;display:flex;align-items:center;gap:10px;min-width:0}
+  .group-name{font-size:14px;font-weight:700;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tier-badge{padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:1px;flex-shrink:0}
+  .tier-S{background:#ff475720;color:var(--s);border:1px solid var(--s)}
+  .tier-A{background:#ff6b3520;color:var(--a);border:1px solid var(--a)}
+  .tier-B{background:#3ddc8420;color:var(--b);border:1px solid var(--b)}
+  .tier-C{background:#4fc3f720;color:var(--c);border:1px solid var(--c)}
+  .tier-D{background:#90a4ae20;color:var(--d);border:1px solid var(--d)}
+  .stars{display:flex;gap:2px;flex-shrink:0}
+  .star{width:10px;height:10px;background:var(--border);border-radius:50%}
+  .star.filled{background:var(--gold)}
+  .group-actions{display:flex;gap:6px;flex-shrink:0}
+  .icon-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;cursor:pointer;border:1px solid transparent;background:transparent;color:var(--muted);font-size:14px;transition:all 0.15s}
+  .icon-btn:hover{border-color:var(--border);color:var(--text)}
+  .skill-list{padding:8px 16px 12px}
+  .subskill{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:6px;margin-bottom:4px;border:1px solid transparent;transition:background 0.15s;cursor:pointer}
+  .subskill:hover{background:var(--bg3);border-color:var(--border)}
+  .subskill-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+  .status-red{background:var(--red-status);box-shadow:0 0 6px var(--red-status)60}
+  .status-green{background:var(--green-status);box-shadow:0 0 6px var(--green-status)60}
+  .status-yellow{background:var(--yellow-status);box-shadow:0 0 6px var(--yellow-status)60}
+  .subskill-content{flex:1;min-width:0}
+  .subskill-name{font-size:13px;font-weight:700;letter-spacing:0.5px}
+  .subskill-desc{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
+  .subskill-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .status-badge{font-size:9px;padding:2px 6px;border-radius:3px;letter-spacing:1px;font-weight:700;border:1px solid}
+  .status-badge.red{color:var(--red-status);border-color:var(--red-status);background:#ff475710}
+  .status-badge.green{color:var(--green-status);border-color:var(--green-status);background:#3ddc8410}
+  .status-badge.yellow{color:var(--yellow-status);border-color:var(--yellow-status);background:#f5c84210}
+  .progress-bar-wrap{background:var(--border);border-radius:2px;height:3px;flex-shrink:0;width:60px}
+  .progress-bar-fill{height:3px;border-radius:2px;background:var(--gold);transition:width 0.3s}
+  .modal-overlay{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:100}
+  .modal{background:var(--bg2);border:1px solid var(--border);border-radius:10px;width:min(600px,95vw);max-height:85vh;overflow:auto;padding:1.5rem}
+  .modal-title{font-size:14px;font-weight:700;letter-spacing:2px;margin-bottom:1.25rem;display:flex;align-items:center;gap:8px}
+  .form-group{margin-bottom:1rem}
+  .form-label{font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:5px;display:block;text-transform:uppercase}
+  .form-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:8px 10px;color:var(--text);font-family:inherit;font-size:12px;outline:none}
+  .form-input:focus{border-color:var(--gold)}
+  .form-input::placeholder{color:var(--muted)}
+  .form-select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:8px 10px;color:var(--text);font-family:inherit;font-size:12px;outline:none;cursor:pointer}
+  .form-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:8px 10px;color:var(--text);font-family:inherit;font-size:12px;outline:none;resize:vertical;min-height:60px}
+  .form-textarea:focus,.form-select:focus{border-color:var(--gold)}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem}
+  .chevron{transition:transform 0.2s;display:inline-block;font-size:10px;color:var(--muted)}
+  .chevron.open{transform:rotate(90deg)}
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem}
+  .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px 12px}
+  .stat-val{font-size:22px;font-weight:700;color:var(--gold)}
+  .stat-label{font-size:9px;letter-spacing:1px;color:var(--muted);margin-top:2px;text-transform:uppercase}
+  .tier-legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem}
+  .tier-pill{display:flex;align-items:center;gap:5px;font-size:10px;letter-spacing:1px}
+  .import-format{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:10px;font-size:10px;color:var(--green-status);line-height:1.7;white-space:pre;overflow:auto;margin:6px 0 12px}
+  .export-section{margin-bottom:1rem}
+  .export-group-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+  .export-subskill-row{display:flex;align-items:center;gap:8px;padding:4px 0 4px 20px;font-size:12px;color:var(--muted)}
+  .cb{width:14px;height:14px;cursor:pointer;accent-color:var(--gold)}
+  .gh-status{font-size:10px;padding:3px 8px;border-radius:3px;letter-spacing:1px}
+  .gh-ok{background:#3ddc8420;color:var(--green-status);border:1px solid var(--green-status)}
+  .gh-err{background:#ff475720;color:var(--red-status);border:1px solid var(--red-status)}
+  .gh-pending{background:#f5c84220;color:var(--yellow-status);border:1px solid var(--yellow-status)}
+  .settings-block{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem}
+  .settings-block-title{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:10px;text-transform:uppercase}
+  .tag-chip{display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:3px 8px;border-radius:3px;background:var(--bg3);border:1px solid var(--border);margin:2px}
+  .detail-modal .star-big{font-size:20px;cursor:pointer;color:var(--border);transition:color 0.1s}
+  .detail-modal .star-big.on{color:var(--gold)}
+  .group-progress{font-size:10px;color:var(--muted);letter-spacing:0.5px}
+  .add-subskill-row{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:5px;cursor:pointer;color:var(--muted);font-size:11px;border:1px dashed transparent;transition:all 0.15s;margin-top:4px}
+  .add-subskill-row:hover{border-color:var(--border);color:var(--text)}
+  .notification{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px 16px;font-size:12px;letter-spacing:0.5px;z-index:200;animation:slideIn 0.2s ease;max-width:300px}
+  .notification.ok{border-color:var(--green-status);color:var(--green-status)}
+  .notification.err{border-color:var(--red-status);color:var(--red-status)}
+  @keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .sep{height:1px;background:var(--border);margin:10px 0}
+  textarea.form-input{resize:vertical;min-height:80px}
+  .inline-edit{border:none;background:transparent;color:var(--text);font-family:inherit;font-size:14px;font-weight:700;letter-spacing:1px;outline:none;min-width:60px;width:100%}
+  .inline-edit:focus{border-bottom:1px dashed var(--gold)}
+  @media(max-width:600px){.stat-row{grid-template-columns:repeat(2,1fr)}.header{flex-wrap:wrap;gap:8px}}
+</style>
+</head>
+<body>
+<div class="app" id="root"></div>
+
+<script>
+const STORAGE_KEY = 'skilltracker_v2';
+
+const TIERS = {
+  S:{label:'S',color:'var(--s)',stars:5,desc:'Mastered — can teach others, deeply internalized'},
+  A:{label:'A',color:'var(--a)',stars:4,desc:'Advanced — reliable, can handle complex cases'},
+  B:{label:'B',color:'var(--b)',stars:3,desc:'Proficient — solid foundation, growing'},
+  C:{label:'C',color:'var(--c)',stars:2,desc:'Learning — aware, needs practice'},
+  D:{label:'D',color:'var(--d)',stars:1,desc:'Exposed — just started, surface level'},
+};
+
+const STATUS_CYCLE = ['red','yellow','green'];
+const STATUS_LABELS = {red:'Just Used',yellow:'Practiced',green:'Understood'};
+const STATUS_NEXT = {red:'yellow',yellow:'green',green:'red'};
+
+const DEFAULT_DATA = {
+  githubToken:'',githubRepo:'',githubFile:'skills.json',
+  skills:[
+    {id:'s1',name:'Database',tier:'A',stars:4,description:'Data storage and retrieval across multiple paradigms',expanded:true,
+      subskills:[
+        {id:'ss1',name:'MongoDB',status:'yellow',desc:'NoSQL document DB, flexible schema, good for unstructured data',tags:['nosql','document']},
+        {id:'ss2',name:'MySQL',status:'yellow',desc:'Relational DB, ACID compliant, widely used in production',tags:['sql','relational']},
+        {id:'ss3',name:'PostgreSQL',status:'yellow',desc:'Advanced relational DB, supports JSON, full-text search, better than MySQL for complex queries',tags:['sql','relational']},
+        {id:'ss4',name:'Weaviate',status:'red',desc:'Vector database for semantic search and AI embeddings',tags:['vector','ai']},
+      ]
+    },
+    {id:'s2',name:'Hosting & Deployment',tier:'B',stars:3,description:'Getting code running and accessible on the internet',expanded:false,
+      subskills:[
+        {id:'ss5',name:'Render',status:'yellow',desc:'PaaS hosting, good free tier, auto-deploy from GitHub, supports background workers',tags:['paas','cloud']},
+        {id:'ss6',name:'Ngrok',status:'green',desc:'Tunnel local server to internet for testing webhooks and demos',tags:['tunnel','dev']},
+        {id:'ss7',name:'Vercel',status:'yellow',desc:'Frontend-focused, excellent DX, auto-deploy, edge functions',tags:['frontend','serverless']},
+      ]
+    },
+    {id:'s3',name:'Complex Projects',tier:'S',stars:5,description:'End-to-end project builds combining multiple skills',expanded:false,
+      subskills:[
+        {id:'ss8',name:'MCQ Self-Host App',status:'green',desc:'Self-hosted quiz app with learn/crop/test modes, plain HTML, hosted on Render with answer sheets',tags:['fullstack','education']},
+        {id:'ss9',name:'Video2Script Pipeline',status:'green',desc:'TTS + Gemini API + yt-dlp to extract video info and generate scripts from video content',tags:['ai','automation','python']},
+      ]
+    },
+    {id:'s4',name:'Slides & Presentation',tier:'B',stars:3,description:'Creating and delivering compelling visual presentations',expanded:false,
+      subskills:[
+        {id:'ss10',name:'AI Slide Making',status:'yellow',desc:'Prompt AI → get script with image cues per slide → produce in Canva. Frameworks: Hook→Problem→Solution→Proof→CTA or Situation→Problem→Solution→Benefits',tags:['ai','canva','storytelling']},
+        {id:'ss11',name:'Delivery Technique',status:'yellow',desc:'3-angle eye contact, hand movements, confidence voice, handshake intro/outro',tags:['softskill','communication']},
+      ]
+    },
+    {id:'s5',name:'Backend',tier:'A',stars:4,description:'Server-side API and application logic',expanded:false,
+      subskills:[
+        {id:'ss12',name:'Flask',status:'green',desc:'Lightweight Python web framework, fast to prototype, sync by default',tags:['python','api']},
+        {id:'ss13',name:'FastAPI',status:'green',desc:'Modern async Python framework, auto-generates OpenAPI docs, better performance than Flask',tags:['python','api','async']},
+      ]
+    },
+    {id:'s6',name:'Frontend',tier:'C',stars:2,description:'UI and user experience implementation',expanded:false,
+      subskills:[
+        {id:'ss14',name:'TSX Boilerplate',status:'yellow',desc:'TypeScript React setup — components, hooks, types; still building depth here',tags:['react','typescript']},
+      ]
+    },
+    {id:'s7',name:'Tech Architecture',tier:'A',stars:4,description:'Designing scalable system structures',expanded:false,
+      subskills:[
+        {id:'ss15',name:'Clean + Micro Architecture',status:'yellow',desc:'Clean arch per service, microservice for whole project, orchestration layer as gatekeeper for cross-service calls, Haystack pipeline pattern, endpoint just calls pl_action.execute',tags:['architecture','design']},
+      ]
+    },
+    {id:'s8',name:'Vision / ML',tier:'B',stars:3,description:'Computer vision, model training and deployment',expanded:false,
+      subskills:[
+        {id:'ss16',name:'Roboflow + Kaggle',status:'yellow',desc:'Data labeling, model training, copy community notebooks and adapt — worked for watermark removal, health Apriori, traffic density+A*+speed estimation, face recognition with person-class classification',tags:['ml','cv','kaggle']},
+      ]
+    },
+    {id:'s9',name:'Productivity & Learning',tier:'B',stars:3,description:'Meta-skills for staying focused and learning effectively',expanded:false,
+      subskills:[
+        {id:'ss17',name:'Focus System',status:'green',desc:'Workout to reset mood, gum or coffee to sustain concentration — tested and works',tags:['productivity','health']},
+        {id:'ss18',name:'NotebookLM for Academic',status:'green',desc:'Great for dense content — reads fast, cites sources, better than re-reading notes that lose context',tags:['learning','ai']},
+        {id:'ss19',name:'Shape Up Cycle',status:'yellow',desc:'Pitch → test options → iterate — treats unknowns as bets, not specs',tags:['product','process']},
+      ]
+    },
+    {id:'s10',name:'Hobbies & Soft Skills',tier:'S',stars:5,description:'Competition-level personal skills',expanded:false,
+      subskills:[
+        {id:'ss20',name:'Ping Pong',status:'green',desc:'3rd place duo, city level — legitimate competitive achievement',tags:['sport','competitive']},
+        {id:'ss21',name:'English (IELTS 6.5)',status:'green',desc:'IELTS 6.5 from 11th grade (2019, harder era). Also 3rd place city-level English competition — grammar-heavy, real proficiency not test-gaming',tags:['language','competition']},
+      ]
+    },
+    {id:'s11',name:'Other Tech & Life Skills',tier:'C',stars:2,description:'Miscellaneous useful techniques',expanded:false,
+      subskills:[
+        {id:'ss22',name:'GitHub Workflow',status:'green',desc:'Pull from branch to stay current, push to sync — basic but consistent',tags:['git','devops']},
+        {id:'ss23',name:'API Integration',status:'green',desc:'Read docs → get key → call endpoint. Simple mental model that works for any API',tags:['api','general']},
+        {id:'ss24',name:'AI Art (Gemini)',status:'yellow',desc:'Gemini now recognizes characters and objects — usable for generating reference art, anime characters, etc.',tags:['ai','creative']},
+        {id:'ss25',name:'Price Comparison',status:'green',desc:'Check Shopee + eBay (official) then Facebook groups — significant price variance possible',tags:['life','shopping']},
+      ]
+    },
+  ]
+};
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || JSON.parse(JSON.stringify(DEFAULT_DATA));
+let activeTab = 'skills';
+let modal = null;
+let notification = null;
+let notifTimer = null;
+let exportSelections = {};
+let ghPushStatus = null;
+
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}
+
+function uid(){return 's'+Math.random().toString(36).slice(2,9)}
+
+function showNotif(msg,type='ok'){
+  if(notifTimer)clearTimeout(notifTimer);
+  notification={msg,type};render();
+  notifTimer=setTimeout(()=>{notification=null;render()},3000);
+}
+
+function computeGroupProgress(skill){
+  const subs=skill.subskills;
+  const total=subs.length;
+  if(!total)return{pct:0,counts:{red:0,yellow:0,green:0}};
+  const counts={red:0,yellow:0,green:0};
+  subs.forEach(s=>counts[s.status]=(counts[s.status]||0)+1);
+  const pct=Math.round((counts.green*100+counts.yellow*50)/total);
+  return{pct,counts};
+}
+
+function computeStats(){
+  let total=0,mastered=0,practiced=0,used=0;
+  state.skills.forEach(sk=>{
+    sk.subskills.forEach(ss=>{
+      total++;
+      if(ss.status==='green')mastered++;
+      else if(ss.status==='yellow')practiced++;
+      else used++;
+    });
+  });
+  const tierCounts={};
+  state.skills.forEach(sk=>tierCounts[sk.tier]=(tierCounts[sk.tier]||0)+1);
+  return{total,mastered,practiced,used,tierCounts};
+}
+
+async function pushToGitHub(){
+  const{githubToken,githubRepo,githubFile}=state;
+  if(!githubToken||!githubRepo){showNotif('Set GitHub token + repo in Settings','err');return;}
+  ghPushStatus='pending';render();
+  try{
+    const api=`https://api.github.com/repos/${githubRepo}/contents/${githubFile}`;
+    let sha=null;
+    try{
+      const r=await fetch(api,{headers:{Authorization:`Bearer ${githubToken}`,Accept:'application/vnd.github+json'}});
+      if(r.ok){const d=await r.json();sha=d.sha;}
+    }catch(e){}
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify(state,null,2))));
+    const body={message:`Update skills ${new Date().toISOString().slice(0,16)}`,content};
+    if(sha)body.sha=sha;
+    const res=await fetch(api,{method:'PUT',headers:{Authorization:`Bearer ${githubToken}`,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(res.ok){ghPushStatus='ok';showNotif('Pushed to GitHub ✓');}
+    else{ghPushStatus='err';showNotif('GitHub push failed: '+res.status,'err');}
+  }catch(e){ghPushStatus='err';showNotif('GitHub error: '+e.message,'err');}
+  render();
+}
+
+function exportJSON(){
+  const selected=[];
+  state.skills.forEach(sk=>{
+    const selSubs=sk.subskills.filter(ss=>exportSelections[ss.id]);
+    if(selSubs.length){
+      selected.push({...sk,subskills:selSubs});
+    }
+  });
+  if(!selected.length){showNotif('Select at least one subskill','err');return;}
+  const blob=new Blob([JSON.stringify({version:2,exported:new Date().toISOString(),skills:selected},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='skills_export.json';a.click();
+  showNotif('Exported '+selected.reduce((a,s)=>a+s.subskills.length,0)+' subskills');
+}
+
+function doImport(text){
+  try{
+    const obj=JSON.parse(text);
+    const incoming=obj.skills||[];
+    incoming.forEach(grp=>{
+      const existing=state.skills.find(s=>s.name===grp.name);
+      if(existing){
+        (grp.subskills||[]).forEach(ss=>{
+          const esub=existing.subskills.find(s=>s.name===ss.name);
+          if(esub){Object.assign(esub,ss);}
+          else{existing.subskills.push({...ss,id:uid()});}
+        });
+      }else{
+        state.skills.push({...grp,id:uid(),subskills:(grp.subskills||[]).map(s=>({...s,id:uid()}))});
+      }
+    });
+    save();showNotif('Imported '+incoming.length+' groups');modal=null;render();
+  }catch(e){showNotif('Invalid JSON: '+e.message,'err');}
+}
+
+function openEditGroup(skId){
+  const sk=state.skills.find(s=>s.id===skId);
+  modal={type:'editGroup',data:{...sk}};render();
+}
+
+function openAddGroup(){
+  modal={type:'editGroup',data:{id:uid(),name:'',tier:'B',stars:3,description:'',subskills:[]}};render();
+}
+
+function openEditSubskill(skId,ssId){
+  const sk=state.skills.find(s=>s.id===skId);
+  const ss=sk.subskills.find(s=>s.id===ssId);
+  modal={type:'editSubskill',skId,data:{...ss,tagsStr:(ss.tags||[]).join(', ')}};render();
+}
+
+function openAddSubskill(skId){
+  modal={type:'editSubskill',skId,data:{id:uid(),name:'',status:'red',desc:'',tagsStr:''}};render();
+}
+
+function saveGroup(d){
+  const idx=state.skills.findIndex(s=>s.id===d.id);
+  if(idx>=0)state.skills[idx]={...state.skills[idx],...d};
+  else state.skills.push({...d,subskills:[]});
+  save();modal=null;render();
+}
+
+function deleteGroup(id){
+  state.skills=state.skills.filter(s=>s.id!==id);
+  save();modal=null;render();showNotif('Skill group deleted');
+}
+
+function saveSubskill(skId,d){
+  const sk=state.skills.find(s=>s.id===skId);
+  const tags=d.tagsStr.split(',').map(t=>t.trim()).filter(Boolean);
+  const ssData={...d,tags,tagsStr:undefined};
+  const idx=sk.subskills.findIndex(s=>s.id===d.id);
+  if(idx>=0)sk.subskills[idx]=ssData;
+  else sk.subskills.push(ssData);
+  save();modal=null;render();
+}
+
+function deleteSubskill(skId,ssId){
+  const sk=state.skills.find(s=>s.id===skId);
+  sk.subskills=sk.subskills.filter(s=>s.id!==ssId);
+  save();modal=null;render();
+}
+
+function cycleStatus(skId,ssId){
+  const sk=state.skills.find(s=>s.id===skId);
+  const ss=sk.subskills.find(s=>s.id===ssId);
+  ss.status=STATUS_NEXT[ss.status];
+  save();render();
+}
+
+function toggleGroup(id){
+  const sk=state.skills.find(s=>s.id===id);
+  sk.expanded=!sk.expanded;render();
+}
+
+function renderStars(n,max=5){
+  return Array.from({length:max},(_,i)=>`<span class="star${i<n?' filled':''}"></span>`).join('');
+}
+
+function renderTierBadge(tier){
+  return`<span class="tier-badge tier-${tier}">${tier}</span>`;
+}
+
+function renderSkillsTab(){
+  const stats=computeStats();
+  return`
+  <div class="stat-row">
+    <div class="stat-card"><div class="stat-val">${stats.total}</div><div class="stat-label">Total Subskills</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--green-status)">${stats.mastered}</div><div class="stat-label">Understood</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--yellow-status)">${stats.practiced}</div><div class="stat-label">Practiced</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--red-status)">${stats.used}</div><div class="stat-label">Just Used</div></div>
+  </div>
+  <div class="section-header">
+    <span class="section-title">Skill Groups</span>
+    <button class="btn primary" onclick="openAddGroup()">+ Add Group</button>
+  </div>
+  ${state.skills.map(sk=>{
+    const prog=computeGroupProgress(sk);
+    return`
+    <div class="skill-group" id="grp-${sk.id}">
+      <div class="skill-group-header ${sk.expanded?'open':''}" onclick="toggleGroup('${sk.id}')">
+        <span class="chevron ${sk.expanded?'open':''}">▶</span>
+        <div class="group-meta">
+          <span class="group-name">${sk.name}</span>
+          ${renderTierBadge(sk.tier)}
+          <div class="stars">${renderStars(sk.stars)}</div>
+          <span class="group-progress">${prog.pct}%</span>
+        </div>
+        <div class="group-actions" onclick="event.stopPropagation()">
+          <button class="icon-btn" onclick="openEditGroup('${sk.id}')" title="Edit">✎</button>
+          <button class="icon-btn" style="color:var(--muted);opacity:0.5" onclick="navigator.clipboard&&navigator.clipboard.writeText('${sk.id}')" title="Copy ID">⊞</button>
+        </div>
+      </div>
+      ${sk.expanded?`
+      <div class="skill-list">
+        ${sk.subskills.map(ss=>`
+        <div class="subskill" ondblclick="openEditSubskill('${sk.id}','${ss.id}')">
+          <span class="subskill-dot status-${ss.status}" title="${STATUS_LABELS[ss.status]}"></span>
+          <div class="subskill-content">
+            <div class="subskill-name">${ss.name}</div>
+            <div class="subskill-desc">${ss.desc}</div>
+            ${(ss.tags||[]).length?`<div style="margin-top:3px">${ss.tags.map(t=>`<span class="tag-chip">${t}</span>`).join('')}</div>`:''}
+          </div>
+          <div class="subskill-right">
+            <span class="status-badge ${ss.status}" onclick="cycleStatus('${sk.id}','${ss.id}');event.stopPropagation()" title="Click to cycle status">${STATUS_LABELS[ss.status]}</span>
+            <button class="icon-btn" onclick="openEditSubskill('${sk.id}','${ss.id}');event.stopPropagation()" title="Edit">✎</button>
+          </div>
+        </div>
+        `).join('')}
+        <div class="add-subskill-row" onclick="openAddSubskill('${sk.id}')">＋ Add subskill</div>
+      </div>`:''}
+    </div>`
+  }).join('')}`;
+}
+
+function renderExportTab(){
+  return`
+  <div class="section-header">
+    <span class="section-title">Export Skills</span>
+    <div style="display:flex;gap:8px">
+      <button class="btn" onclick="Object.keys(exportSelections).forEach(k=>exportSelections[k]=true);render()">Select All</button>
+      <button class="btn" onclick="exportSelections={};render()">Clear</button>
+      <button class="btn primary" onclick="exportJSON()">↓ Export JSON</button>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:1rem">Tick individual subskills or use the group checkbox to select all in a group.</div>
+  ${state.skills.map(sk=>`
+    <div class="export-section">
+      <div class="export-group-row">
+        <input type="checkbox" class="cb" 
+          ${sk.subskills.every(ss=>exportSelections[ss.id])?'checked':''}
+          onchange="sk_toggle('${sk.id}',this.checked)">
+        <span style="font-size:13px;font-weight:700">${sk.name}</span>
+        ${renderTierBadge(sk.tier)}
+      </div>
+      ${sk.subskills.map(ss=>`
+        <div class="export-subskill-row">
+          <input type="checkbox" class="cb" id="ex-${ss.id}" ${exportSelections[ss.id]?'checked':''} onchange="exportSelections['${ss.id}']=this.checked;render()">
+          <label for="ex-${ss.id}" style="cursor:pointer">${ss.name}</label>
+          <span class="status-badge ${ss.status}" style="margin-left:auto">${STATUS_LABELS[ss.status]}</span>
+        </div>
+      `).join('')}
+    </div>
+  `).join('')}`;
+}
+
+function renderImportModal(){
+  let txt='';
+  return`
+  <div class="modal-title">↑ Import Skills</div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Import format — merge by group name, upsert by subskill name:</div>
+  <div class="import-format">{
+  "version": 2,
+  "skills": [
+    {
+      "name": "GroupName",
+      "tier": "B",
+      "stars": 3,
+      "description": "Short description",
+      "subskills": [
+        {
+          "name": "SubskillName",
+          "status": "red | yellow | green",
+          "desc": "Description text",
+          "tags": ["tag1","tag2"]
+        }
+      ]
+    }
+  ]
+}</div>
+  <div class="form-group">
+    <label class="form-label">Paste JSON here</label>
+    <textarea class="form-input" id="import-json" rows="8" placeholder="Paste your skills JSON..."></textarea>
+  </div>
+  <div style="font-size:10px;color:var(--muted);margin-bottom:10px">• Existing groups will be merged (subskills upserted by name)<br>• New groups will be added<br>• Status: "red" = Just Used, "yellow" = Practiced, "green" = Understood</div>
+  <div class="modal-actions">
+    <button class="btn" onclick="modal=null;render()">Cancel</button>
+    <button class="btn primary" onclick="doImport(document.getElementById('import-json').value)">Import</button>
+  </div>`;
+}
+
+function renderEditGroupModal(){
+  const d=modal.data;
+  const isNew=!state.skills.find(s=>s.id===d.id);
+  return`
+  <div class="modal-title">${isNew?'Add':'Edit'} Skill Group</div>
+  <div class="form-group">
+    <label class="form-label">Group Name</label>
+    <input class="form-input" id="mg-name" value="${d.name}" placeholder="e.g. Backend">
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="form-group">
+      <label class="form-label">Tier</label>
+      <select class="form-select" id="mg-tier">
+        ${Object.keys(TIERS).map(t=>`<option value="${t}"${d.tier===t?' selected':''}>${t} — ${TIERS[t].desc.slice(0,30)}...</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Stars (1–5)</label>
+      <input class="form-input" id="mg-stars" type="number" min="1" max="5" value="${d.stars}">
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Description</label>
+    <textarea class="form-input" id="mg-desc" placeholder="What this skill group covers...">${d.description}</textarea>
+  </div>
+  <div class="modal-actions">
+    ${!isNew?`<button class="btn danger" onclick="deleteGroup('${d.id}')">Delete Group</button>`:''}
+    <button class="btn" onclick="modal=null;render()">Cancel</button>
+    <button class="btn primary" onclick="saveGroup({id:'${d.id}',name:document.getElementById('mg-name').value,tier:document.getElementById('mg-tier').value,stars:+document.getElementById('mg-stars').value,description:document.getElementById('mg-desc').value,expanded:${d.expanded||true},subskills:${JSON.stringify(d.subskills||[])}})">Save</button>
+  </div>`;
+}
+
+function renderEditSubskillModal(){
+  const d=modal.data;
+  const isNew=!state.skills.find(s=>s.id===modal.skId)?.subskills.find(s=>s.id===d.id);
+  return`
+  <div class="modal-title">${isNew?'Add':'Edit'} Subskill</div>
+  <div class="form-group">
+    <label class="form-label">Name</label>
+    <input class="form-input" id="ms-name" value="${d.name}" placeholder="e.g. FastAPI">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Status</label>
+    <select class="form-select" id="ms-status">
+      ${Object.entries(STATUS_LABELS).map(([k,v])=>`<option value="${k}"${d.status===k?' selected':''}>${v}</option>`).join('')}
+    </select>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Description</label>
+    <textarea class="form-input" id="ms-desc" placeholder="What you know, how you've used it...">${d.desc||''}</textarea>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Tags (comma separated)</label>
+    <input class="form-input" id="ms-tags" value="${d.tagsStr||''}" placeholder="python, api, async">
+  </div>
+  <div class="modal-actions">
+    ${!isNew?`<button class="btn danger" onclick="deleteSubskill('${modal.skId}','${d.id}')">Delete</button>`:''}
+    <button class="btn" onclick="modal=null;render()">Cancel</button>
+    <button class="btn primary" onclick="saveSubskill('${modal.skId}',{id:'${d.id}',name:document.getElementById('ms-name').value,status:document.getElementById('ms-status').value,desc:document.getElementById('ms-desc').value,tagsStr:document.getElementById('ms-tags').value})">Save</button>
+  </div>`;
+}
+
+function renderSettingsTab(){
+  const ghLabel=ghPushStatus==='ok'?'✓ Pushed':ghPushStatus==='err'?'✗ Failed':ghPushStatus==='pending'?'Pushing...':'Not pushed';
+  const ghClass=ghPushStatus==='ok'?'gh-ok':ghPushStatus==='err'?'gh-err':ghPushStatus==='pending'?'gh-pending':'';
+  return`
+  <div class="settings-block">
+    <div class="settings-block-title">GitHub Sync</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Auto-push your skill data to a GitHub repo. Create a fine-grained token with "Contents: Read and Write" permission.</div>
+    <div class="form-group">
+      <label class="form-label">Personal Access Token</label>
+      <input class="form-input" id="gh-token" type="password" value="${state.githubToken||''}" placeholder="ghp_...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Repo (owner/repo)</label>
+      <input class="form-input" id="gh-repo" value="${state.githubRepo||''}" placeholder="yourusername/skill-tracker">
+    </div>
+    <div class="form-group">
+      <label class="form-label">File path in repo</label>
+      <input class="form-input" id="gh-file" value="${state.githubFile||'skills.json'}">
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+      <button class="btn primary" onclick="state.githubToken=document.getElementById('gh-token').value;state.githubRepo=document.getElementById('gh-repo').value;state.githubFile=document.getElementById('gh-file').value||'skills.json';save();showNotif('Settings saved')">Save Settings</button>
+      <button class="btn success" onclick="state.githubToken=document.getElementById('gh-token').value;state.githubRepo=document.getElementById('gh-repo').value;state.githubFile=document.getElementById('gh-file').value||'skills.json';save();pushToGitHub()">↑ Push to GitHub</button>
+      ${ghClass?`<span class="gh-status ${ghClass}">${ghLabel}</span>`:''}
+    </div>
+  </div>
+  <div class="settings-block">
+    <div class="settings-block-title">Tier Legend</div>
+    ${Object.entries(TIERS).map(([k,t])=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border)">
+        <span class="tier-badge tier-${k}">${k}</span>
+        <div class="stars">${renderStars(t.stars)}</div>
+        <span style="font-size:11px;color:var(--muted)">${t.desc}</span>
+      </div>
+    `).join('')}
+  </div>
+  <div class="settings-block">
+    <div class="settings-block-title">Status Legend</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${Object.entries(STATUS_LABELS).map(([k,v])=>`
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="subskill-dot status-${k}" style="width:10px;height:10px;flex-shrink:0;border-radius:50%"></span>
+          <span class="status-badge ${k}">${v}</span>
+          <span style="font-size:11px;color:var(--muted)">${k==='red'?'Applied once, not fully digested':k==='yellow'?'Used multiple times, getting comfortable':'Internalized — can explain and reuse confidently'}</span>
+        </div>
+      `).join('')}
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-top:10px">Click any status badge on a subskill to cycle: Just Used → Practiced → Understood → Just Used</div>
+  </div>
+  <div class="settings-block">
+    <div class="settings-block-title">Data</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="modal={type:'import'};render()">↑ Import JSON</button>
+      <button class="btn danger" onclick="if(confirm('Reset ALL data to defaults?')){localStorage.removeItem('${STORAGE_KEY}');state=JSON.parse(JSON.stringify(DEFAULT_DATA));save();render();showNotif('Reset complete')}">Reset to Defaults</button>
+    </div>
+  </div>`;
+}
+
+window.sk_toggle=function(skId,checked){
+  const sk=state.skills.find(s=>s.id===skId);
+  sk.subskills.forEach(ss=>exportSelections[ss.id]=checked);render();
+}
+
+function render(){
+  const root=document.getElementById('root');
+  const ghLabel=ghPushStatus==='ok'?'✓':ghPushStatus==='err'?'✗':ghPushStatus==='pending'?'…':'';
+  const ghClass=ghPushStatus==='ok'?'gh-ok':ghPushStatus==='err'?'gh-err':ghPushStatus==='pending'?'gh-pending':'';
+
+  root.innerHTML=`
+  <div class="header">
+    <div>
+      <div class="logo">SKILL<span>.EXE</span></div>
+      <div style="font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:2px">GAMIFIED PROGRESS TRACKER</div>
+    </div>
+    <div class="nav-tabs">
+      <button class="tab${activeTab==='skills'?' active':''}" onclick="activeTab='skills';render()">Skills</button>
+      <button class="tab${activeTab==='export'?' active':''}" onclick="activeTab='export';render()">Export</button>
+      <button class="tab${activeTab==='settings'?' active':''}" onclick="activeTab='settings';render()">Settings</button>
+    </div>
+    <div class="header-actions">
+      <button class="btn" onclick="modal={type:'import'};render()">↑ Import</button>
+      <button class="btn ${ghClass}" onclick="pushToGitHub()" title="Push to GitHub">↑ GitHub ${ghLabel}</button>
+    </div>
+  </div>
+  <div id="main-content">
+    ${activeTab==='skills'?renderSkillsTab():''}
+    ${activeTab==='export'?renderExportTab():''}
+    ${activeTab==='settings'?renderSettingsTab():''}
+  </div>
+  ${modal?`<div class="modal-overlay" onclick="if(event.target===this){modal=null;render()}">
+    <div class="modal" onclick="event.stopPropagation()">
+      ${modal.type==='import'?renderImportModal():''}
+      ${modal.type==='editGroup'?renderEditGroupModal():''}
+      ${modal.type==='editSubskill'?renderEditSubskillModal():''}
+    </div>
+  </div>`:''}
+  ${notification?`<div class="notification ${notification.type}">${notification.msg}</div>`:''}`;
+}
+
+render();
+</script>
+</body>
+</html>
